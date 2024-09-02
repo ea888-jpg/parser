@@ -1,0 +1,129 @@
+<!DOCTYPE html>
+<html>
+<head>
+    <meta charset="UTF-8">
+    <title>Data Processing</title>
+    <link rel="stylesheet" type="text/css" href="styles.css">
+
+    <!-- <script src="https://unpkg.com/pdf-lib"></script> -->
+    <script src="pdf-lib.js"></script>
+    <script>
+
+        function parse() {
+            var inputText = document.getElementById("inputField").value;
+
+            var segments = inputText.match(/PEG_\d+/g);
+
+            var output = "";
+            var partIndex = 1;
+            for (let i = 0; i < segments.length; i++) {
+                var segmentNumber = i + 1;
+
+                var segmentText = segments[i].substring(4);
+
+                if (segmentNumber % 60 === 0 || segmentNumber === 1) {
+                    output += "<br><br><b>Частина " + partIndex + "</b><br>";
+                    partIndex += 1
+                }
+
+                output += segmentText + ", ";
+            }
+
+            document.getElementById("outputField").value = output;
+            document.getElementById("formattedOutput").innerHTML = output;
+        }
+
+        function pasteText() {
+            navigator.clipboard.readText().then(function (pastedText) {
+                document.getElementById("inputField").value = pastedText;
+            });
+        }
+
+        function copyText() {
+            var outputText = document.getElementById("outputField").value;
+
+            var tempTextArea = document.createElement("textarea");
+            tempTextArea.value = outputText;
+            document.body.appendChild(tempTextArea);
+
+            tempTextArea.select();
+            document.execCommand("copy");
+            document.body.removeChild(tempTextArea);
+            alert("Text copied!");
+        }
+
+        function copyFormattedText() {
+        var formattedText = document.getElementById("formattedOutput").innerText;
+        
+        var tempTextArea = document.createElement("textarea");
+        tempTextArea.value = formattedText;
+        document.body.appendChild(tempTextArea);
+        
+        tempTextArea.select();
+        document.execCommand("copy");
+        
+        document.body.removeChild(tempTextArea);
+        
+        alert("Formatted text copied!");
+      }
+
+      async function fillPDFTemplate() {
+        // Read the existing PDF template
+        const existingPdfBytes = await fetch('/Users/bohdankonopolskyi/RiderProjects/parser.github.io/template.pdf').then((res) =>
+          res.arrayBuffer()
+        );
+
+        // Load the existing PDF
+        const pdfDoc = await PDFLib.PDFDocument.load(existingPdfBytes);
+
+        // Get the first page of the existing PDF
+        const pages = pdfDoc.getPages();
+        const firstPage = pages[0];
+
+        // Add text to the first page
+        const { font, size } = await pdfDoc.embedFont(PDFLib.Font.Helvetica);
+        const text = 'Hello, this text was added to the template!';
+        firstPage.drawText(text, {
+          x: 50,
+          y: 500,
+          font: font,
+          size: size,
+        });
+
+        // Serialize the modified PDF
+        const modifiedPdfBytes = await pdfDoc.save();
+
+        // Generate a Blob from the PDF bytes
+        const modifiedPdfBlob = new Blob([modifiedPdfBytes], {
+          type: 'application/pdf',
+        });
+
+        // Create a download link and trigger the download
+        const downloadLink = document.createElement('a');
+        downloadLink.href = URL.createObjectURL(modifiedPdfBlob);
+        downloadLink.download = 'filled_template.pdf';
+        downloadLink.click();
+      }
+
+    </script>
+      
+</head>
+<body>
+<label for="inputField"></label><textarea cols="50" id="inputField" rows="5"></textarea>
+<br>
+<button onclick="pasteText()">Paste raw text</button>
+<br>
+<button onclick="parse()">Process</button>
+<br>
+<label for="outputField"></label><textarea cols="50" id="outputField" readonly rows="5"></textarea>
+<br>
+<button onclick="copyText()">Copy processed text</button>
+<br>
+<button onclick="fillPDFTemplate()">Fill PDF Template</button>
+<br>
+<button onclick="copyFormattedText()">Copy Formatted Text lower</button>
+<br>
+<div id="formattedOutput"></div>
+
+</body>
+</html>

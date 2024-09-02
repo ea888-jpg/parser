@@ -1,0 +1,21 @@
+body {
+    text-align: center;
+}
+
+textarea {
+    font-size: 16pt;
+}
+
+button {
+    font-size: 18px;
+    background-color: #F0F0F0;
+    color: #333333;
+    border: none;
+    padding: 10px 20px;
+    margin: 5px;
+    cursor: pointer;
+}
+
+#formattedOutput {
+    font-family: 'Montserrat-Regular', sans-serif;
+ } 
